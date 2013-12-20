@@ -1,0 +1,307 @@
+<script>
+$(function(){
+  // set the dialog box default properties
+  $('#repeat_option_dialog').dialog({
+    autoOpen: false,
+    modal: true,
+    width: 'auto',
+    buttons: {
+      <%= t('repeat.button.complete') -%>: function(event){
+        ItemField.add();
+        $(this).dialog('close');
+      },
+      <%= t('repeat.button.cancel') -%>: function(){$(this).dialog('close');}
+    }
+  });
+  // function to open the dialog
+  $('#repeat_option_opener').click( function() {
+   // if ($('input:checkbox#repeat_option_opener').is(':checked')) {
+      SetField.replace();
+      $('#repeat_option_dialog').dialog('open');
+   //   return true;}
+    return true;
+  });
+
+  $('#event_start_at').change( function() {
+    $('#start_day').val($('#event_start_at').val());
+    return true;
+  });
+
+  $('#end_date').change( function() {
+    setEndDetail();
+    return true;
+  });
+
+});
+
+  var ItemField = {
+    itemTemplate : '__item__',
+    add : function () {
+      var field = document.getElementById('repeat_detail');
+      var newItem = '';
+      this.itemTemplate.replace(/__item__/mg, $("#repeat_interval").val());
+      newItem = ''
+              + '<input type="hidden" id="repeat_conf" name="repeat[type]" value="' + document.getElementById("repeat_type").value +  '" />'
+              + '<input type="hidden" id="repeat_conf" name="repeat[interval]" value="' + document.getElementById("repeat_interval").value +  '" />';
+      //if week and weekday checked
+      if ($('#repeat_month_base_monday:checked').val() == '1'){
+        newItem += '<input type="hidden" id="weekday_1" name="repeat[weekday[<%= :monday -%>]]" value="monday" />';
+      }
+      if ($('#repeat_month_base_tuesday:checked').val() == '1'){
+        newItem += '<input type="hidden" id="weekday_2" name="repeat[weekday[<%= :tuesday -%>]]" value="tuesday" />';
+      }
+      if ($('#repeat_month_base_wednesday:checked').val() == '1'){
+        newItem += '<input type="hidden" id="weekday_3" name="repeat[weekday[<%= :wednesday -%>]]" value="wednesday" />';
+      }
+      if ($('#repeat_month_base_thursday:checked').val() == '1'){
+        newItem += '<input type="hidden" id="weekday_4" name="repeat[weekday[<%= :thursday -%>]]" value="thursday" />';
+      }
+      if ($('#repeat_month_base_friday:checked').val() == '1'){
+        newItem += '<input type="hidden" id="weekday_5" name="repeat[weekday[<%= :friday -%>]]" value="friday" />';
+      }
+      if ($('#repeat_month_base_saturday:checked').val() == '1'){
+        newItem += '<input type="hidden" id="weekday_6" name="repeat[weekday[<%= :saturday -%>]]" value="saturday" />';
+      }
+      if ($('#repeat_month_base_sunday:checked').val() == '1'){
+        newItem += '<input type="hidden" id="weekday_0" name="repeat[weekday[<%= :sunday -%>]]" value="sunday" />';
+      }
+      //if month and base_week checked
+      if ($("#repeat_month_base_week:checked").val() == 'week'){
+        newItem += '<input type="hidden" id="repeat_month_base_week" name="repeat[month_base_week]" value="'+ getWeek() +'" />';
+      }    
+
+      if (document.getElementById("end_type_times").checked){
+        newItem += '<input type="hidden" id="repeat_conf" name="repeat[end_times]" value="'
+                + (document.getElementById("end_date_times").value - 1) +  '" />'
+      }else if (document.getElementById("end_type_date").checked){
+        newItem += '<input type="hidden" id="repeat_conf" name="repeat[end_date]" value="'
+                + $("#end_date").val()
+                +  '" />';
+      }
+      newItem += document.getElementById("detail_text_interval").value;
+      newItem += document.getElementById("detail_text_append").value;
+      newItem += document.getElementById("detail_text_end").value;
+      newItem += '  ';
+      newItem += '&nbsp <a href="javascript:void(0)" onClick="ItemField.detailRemove();"><%= t('repeat.button.delete') -%></a>';
+
+      field.innerHTML = newItem;
+      $('#repeat_option_dialog').dialog('close');
+
+    },
+    detailRemove : function () {
+      var field = document.getElementById('repeat_detail');
+      field.innerHTML = '<%= t('repeat.detail_item.not_set') -%>';
+    }
+  }
+
+var SetField = {
+  replace : function (){
+    var appendItem = '';
+
+    switch($("#repeat_type").val()){
+      case "day":
+        break;
+      case "week":
+        appendItem = '<%= t('repeat.base_type.week') -%>:'
+                   + '<input type="checkbox" id="repeat_month_base_monday" value=1 onchange = "setAppendField()" />'
+                   + '<%=  t('repeat.weekday.monday') -%>'
+                   + '<input type="checkbox" id="repeat_month_base_tuesday" value=1 onchange = "setAppendField()" />'
+                   + '<%= t('repeat.weekday.tuesday') -%>'
+                   + '<input type="checkbox" id="repeat_month_base_wednesday" value=1 onchange = "setAppendField()" />'
+                   + '<%= t('repeat.weekday.wednesday') -%>'
+                   + '<input type="checkbox" id="repeat_month_base_thursday" value=1 onchange = "setAppendField()" />'
+                   + '<%= t('repeat.weekday.thursday') -%>'
+                   + '<input type="checkbox" id="repeat_month_base_friday" value=1 onchange = "setAppendField()" />'
+                   + '<%= t('repeat.weekday.friday') -%>'
+                   + '<input type="checkbox" id="repeat_month_base_saturday" value=1 onchange = "setAppendField()" />'
+                   + '<%= t('repeat.weekday.saturday') -%>'
+                   + '<input type="checkbox" id="repeat_month_base_sunday" value=1 onchange = "setAppendField()" />'
+                   + '<%= t('repeat.weekday.sunday') -%>'
+                   + '<br />';
+        break;
+      case "month":
+        appendItem = '<%= t('repeat.base') -%>:'
+                    + '<%= radio_button_tag :repeat_month_base, 'day', true, {:onclick => 'setAppendField()'} -%>'
+                    + '<%= t('repeat.base_type.day') -%>'
+                    + '<%= radio_button_tag :repeat_month_base, 'week', false, {:onclick => 'setAppendField()'} -%>'
+                    + '<%= t('repeat.base_type.week') -%>'
+                    + '<br />';
+        break;
+      case "year": 
+        break;
+      default:
+        appendItem = '';
+    }
+
+    $("#append_area").html(appendItem);
+    getInterval();
+    setAppendField()
+  }
+}
+
+function getInterval(){
+  var interval = document.getElementById('repeat_interval').value;
+  var intervalField = document.getElementById('detail_interval_field');
+  var intervalText ='';
+
+  switch(document.getElementById('repeat_type').value){
+    case 'day':
+      if (interval > 1){
+        intervalText = interval + '<%= t('repeat.unit.day') -%>'
+                     + '<%= t('repeat.detail_item.every') -%>';
+      }else{
+        intervalText = '<%= t('repeat.type.day') -%>';
+      }
+      break;
+    case 'week':
+      if (interval > 1){
+        intervalText = interval + '<%= t('repeat.unit.week') -%>'
+                     + '<%= t('repeat.detail_item.every') -%>';
+      }else{
+        intervalText = '<%= t('repeat.type.week') -%>';
+      }
+      break;
+    case 'month':
+      if (interval > 1){
+        intervalText = interval + '<%= t('repeat.unit.months') -%>'
+                     + '<%= t('repeat.detail_item.every') -%>';
+      }else{
+        intervalText = '<%= t('repeat.type.month') -%>';
+      }
+      break;
+    case 'year':
+      if (interval > 1){
+        intervalText = interval + '<%= t('repeat.unit.year') -%>'
+                     + '<%= t('repeat.detail_item.every') -%>';
+      }else{
+        intervalText = '<%= t('repeat.type.year') -%>';
+      }
+      intervalText += ' <%= @date.strftime("%m/%d") -%>';
+      break;
+  }
+  intervalField.innerHTML = intervalText;
+  document.getElementById("detail_text_interval").value = intervalText;
+}
+
+function setAppendField(){
+  var appendDetailText = '';
+  var countWeekday = 0;
+
+  weekday = new Array('<%= t('repeat.weekday.sunday') -%>', '<%= t('repeat.weekday.monday') -%>', '<%= t('repeat.weekday.tuesday') -%>', '<%= t('repeat.weekday.wednesday') -%>', '<%= t('repeat.weekday.thursday') -%>', '<%= t('repeat.weekday.friday') -%>', '<%= t('repeat.weekday.saturday') -%>');
+
+   switch($('#repeat_type').val()){
+    case "week":
+      if ($('#repeat_month_base_monday:checked').val() == '1'){
+        appendDetailText += ' ' + '<%= t('repeat.weekday.monday') -%>';
+        countWeekday++;
+      }
+      if ($('#repeat_month_base_tuesday:checked').val() == '1'){
+        appendDetailText += ' ' + '<%= t('repeat.weekday.tuesday') -%>';
+        countWeekday++;
+      }
+      if ($('#repeat_month_base_wednesday:checked').val() == '1'){
+        appendDetailText += ' ' + '<%= t('repeat.weekday.wednesday') -%>';
+        countWeekday++;
+      }
+      if ($('#repeat_month_base_thursday:checked').val() == '1'){
+        appendDetailText += ' ' + '<%= t('repeat.weekday.thursday') -%>';
+        countWeekday++;
+      }
+      if ($('#repeat_month_base_friday:checked').val() == '1'){
+        appendDetailText += ' ' + '<%= t('repeat.weekday.friday') -%>';
+        countWeekday++;
+      }
+      if ($('#repeat_month_base_saturday:checked').val() == '1'){
+        appendDetailText += ' ' + '<%= t('repeat.weekday.saturday') -%>';
+        countWeekday++;
+      }
+      if ($('#repeat_month_base_sunday:checked').val() == '1'){
+        appendDetailText += ' ' + '<%= t('repeat.weekday.sunday') -%>';
+        countWeekday++;
+      }
+      if(countWeekday == weekday.length){
+        appendDetailText = ' ' + '<%= t('repeat.detail_item.all_days') -%>';
+      }
+      break;
+    case "month":
+      var day = new Date("<%= @date.strftime("%Y/%m/%d") -%>");
+
+      if ($("#repeat_month_base_day:checked").val() == 'day'){
+        appendDetailText += ' ' + day.getDate()
+                    + '<%= t('repeat.unit.day') -%>';
+      }else if ($("#repeat_month_base_week:checked").val() == 'week'){
+        appendDetailText += ' ' + '<%= t('repeat.detail_item.the') -%>'
+                    + getWeek()
+                    + weekday[day.getDay()]
+                    + '<%= t('repeat.base_type.week') -%>';
+      }
+      break;
+    default:
+      appendDetailText = '';
+  }
+
+  $('#detail_append_field').html(appendDetailText);
+  $('#detail_text_append').val(appendDetailText);
+
+}
+
+function setEndDetail(){
+  var endDetailField = document.getElementById("detail_end_field");
+  var endDetailText = '';
+
+  if (document.getElementById("end_type_times").checked){
+    endDetailText = ',' + document.getElementById('end_date_times').value + '<%= t('repeat.unit.times') -%>';
+  }else if (document.getElementById("end_type_date").checked){
+    endDetailText = ',' + $("#end_date").val()
+                  + "<%= t('repeat.detail_item.at') -%>";
+  }
+  endDetailField.innerHTML = endDetailText;
+  document.getElementById("detail_text_end").value = endDetailText;
+}
+
+function getWeek (){
+    var day = new Date("<%= @date.strftime("%Y/%m/%d") -%>");
+    var week = parseInt((day.getDate() + 6) / 7)
+    return week
+}
+
+</script>
+
+<div id="repeat_option_dialog" title="<%= t('repeat.title') -%>" style="display:none;">
+    <br />
+    <%= t('repeat.title') -%>:
+    <%= select_tag :repeat_type, raw('<option value="day" selected="selected">' + t('repeat.type.day') + '</option><option value="week">' + t('repeat.type.week') + '</option><option value="month">' + t('repeat.type.month') + '</option><option value="year">' + t('repeat.type.year')  + '</option>'), :onchange => 'SetField.replace()' -%>
+    <br />
+
+    <%= t('repeat.interval') -%>:
+    <%= select_tag :repeat_interval, options_for_select((1..30).to_a), :onchange => 'getInterval()' -%>
+    <br />
+
+    <span id="append_area"></span>
+
+    <%= t('repeat.start') -%>:
+    <input id="start_day" type="text" value="<%= @date.strftime("%Y-%m-%d %H:%M") -%>" size="15" name="start_day" disabled="disabled"></input>
+    <br />
+
+    <%= t('repeat.end') -%>:<br />
+    <%= radio_button_tag :end_type, 'inf', true , :onclick => 'setEndDetail()' -%>
+    <%= t('repeat.end_type.inf') -%><br />
+
+    <%= radio_button_tag :end_type, 'times', false ,:onclick => 'setEndDetail()' -%>
+    <%= t('repeat.end_type.times') -%>
+    <%= select_tag :end_date_times, options_for_select((1..50).to_a) , :onchange => 'setEndDetail()'-%><br />
+
+    <%= radio_button_tag :end_type, 'date', false ,:onclick => 'setEndDetail()' -%>
+    <%= t('repeat.end_type.day') -%>
+    <input id="end_date" type="text" value="<%= (@date + 2.years).strftime("%Y-%m-%d") -%>" size="10" data-validate="true"></input>
+
+    <br />
+    <%= t('repeat.detail') -%>:
+    <span id="detail_interval_field"></span>
+    <span id="detail_append_field"></span>
+    <span id="detail_end_field"></span>
+    <input type="hidden" id="detail_text_interval" value="">
+    <input type="hidden" id="detail_text_append" value="">
+    <input type="hidden" id="detail_text_end" value="">
+</div>
+

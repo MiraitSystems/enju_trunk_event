@@ -65,8 +65,109 @@ class Event < ActiveRecord::Base
   def set_display_name
     self.display_name = self.name if self.display_name.blank?
   end
-end
 
+  def self.invalid(event, repeat)
+    if repeat['end_date']
+      begin
+        end_date = Time.zone.parse(repeat['end_date'].to_s)
+        start_date = Time.zone.parse(event['start_at'].to_s)
+        if end_date.nil? || start_date.nil? || end_date < start_date
+          false
+        else
+          true
+        end
+      rescue ArgumentError
+        false
+      end
+    else
+      true
+    end
+  end
+
+  def self.set_recurring_event(event, repeat)
+    event['display_name'] = event['name'] if event['display_name'].blank?
+    recurring_events = Array.new()
+
+    i = repeat['interval'].to_i
+    rt = 365
+    end_date = Time.now + 30.years
+
+    start_day = Time.zone.parse(event['start_at'].to_s)
+    weekday = {0 => :sunday, 1 => :monday, 2 => :tuesday, 3 => :wednesday, 4 => :thursday, 5 => :friday, 6 => :saturday}
+    wd_name = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+
+    start_at_time = Time.zone.parse(event['start_at'].to_s).seconds_since_midnight
+    end_at_time = Time.zone.parse(event['end_at'].to_s).seconds_since_midnight
+
+    if repeat['end_times']
+      rt = repeat['end_times'].to_i
+    elsif repeat['end_date']
+      end_date = Time.zone.parse(repeat['end_date'].to_s)
+    else
+      end_date = Time.zone.parse(Term.get_term_end_at(event['start_at']).to_s)
+    end
+
+    if repeat['weekday']
+      rt = rt + 1
+      event['start_at'] = Time.zone.parse(event['start_at'].to_s) - i.weeks
+      event['end_at'] = Time.zone.parse(event['end_at'].to_s) - i.weeks
+    end
+
+    rt.times do |r|
+
+      start_at = Time.zone.parse(event['start_at'].to_s)
+      end_at = Time.zone.parse(event['end_at'].to_s)
+
+      case repeat['type']
+      when "day" then
+        event['start_at'] = (start_at + i.days)
+        event['end_at'] = (end_at + i.days)
+      when "week" then
+        if repeat['weekday']
+          start_at = start_at.prev_week
+          end_at = end_at.prev_week
+          wd_name.length.times do |w|
+            if repeat['weekday'][wd_name[w]]
+              event['start_at'] = (start_at + i.weeks).next_week(weekday[w]) + start_at_time
+              event['end_at'] = (end_at + i.weeks).next_week(weekday[w]) + end_at_time
+              if end_date >= Time.zone.parse(event['start_at'].to_s) && start_day < Time.zone.parse(event['start_at'].to_s)
+                recurring_events << Event.new(event)
+              end
+            end
+          end
+        else
+          event['start_at'] = (start_at + i.weeks)
+          event['end_at'] = (end_at + i.weeks)
+        end
+      when "month" then
+        if repeat['month_base_week']
+          start_at += i.months
+          end_at += i.months
+          s = start_at.beginning_of_month + (repeat['month_base_week'].to_i - 1).weeks
+          e = end_at.beginning_of_month + (repeat['month_base_week'].to_i - 1).weeks
+          event['start_at'] = s.next_week(weekday[start_day.wday]) + start_at_time
+          event['end_at'] = e.next_week(weekday[start_day.wday]) + end_at_time
+        else
+          event['start_at'] = (start_at + i.months)
+          event['end_at'] = (end_at + i.months)
+        end
+      when "year" then
+        event['start_at'] = (start_at + i.years)
+        event['end_at'] = (end_at + i.years)
+      else
+        event['start_at'] = (start_at + i.days).to_s
+        event['end_at'] = (end_at + i.days).to_s
+      end
+
+      if end_date < Time.zone.parse(event['start_at'].to_s)
+        break
+      elsif !repeat['weekday']
+        recurring_events << Event.new(event)
+      end
+    end
+    return recurring_events
+  end
+end
 # == Schema Information
 #
 # Table name: events

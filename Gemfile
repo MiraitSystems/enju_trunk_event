@@ -16,3 +16,6 @@ gem 'sunspot-rails-tester', :git => 'git://github.com/justinko/sunspot-rails-tes
 
 # To use debugger
 # gem 'ruby-debug19', :require => 'ruby-debug'
+
+# To use bulk insert
+gem 'activerecord-import'

@@ -74,17 +74,8 @@ class EventsController < ApplicationController
   # GET /events/new.json
   def new
      prepare_options
-    if params[:date]
-      begin
-        date = Time.zone.parse(params[:date])
-      rescue ArgumentError
-        date = Time.zone.now.beginning_of_day
-        flash[:notice] = t('page.invalid_date')
-      end
-    else
-      date = Time.zone.now.beginning_of_day
-    end
-    @event = Event.new(:start_at => date, :end_at => date)
+    @date = get_date
+    @event = Event.new(:start_at => @date, :end_at => @date)
     @event.library = @library
 
     respond_to do |format|
@@ -102,16 +93,32 @@ class EventsController < ApplicationController
   # POST /events
   # POST /events.json
   def create
+    @date = get_date
+    repeat_invarid = true
+    repeat_invarid = Event.invalid(params[:event] , params[:repeat]) if params[:repeat]
+
     @event = Event.new(params[:event])
     @event.set_date
 
     respond_to do |format|
-      if @event.save
+      if @event.valid? && repeat_invarid
+        @event.save
+        if params[:repeat].present?
+          repeat_event = params[:event]
+          repeat_event['start_at'] = @event.start_at
+          repeat_event['end_at'] = @event.end_at
+          Event.import Event.set_recurring_event(repeat_event, params[:repeat])
+        end
         flash[:notice] = t('controller.successfully_created', :model => t('activerecord.models.event'))
-        format.html { redirect_to(@event) }
+        format.html { redirect_to :controller => 'calendar', :action => 'index' }
+       # format.html { redirect_to(@event) }
         format.json { render :json => @event, :status => :created, :location => @event }
       else
         prepare_options
+        if !repeat_invarid && @event.valid?
+          flash[:notice] = t('repeat.error')
+          format.html { redirect_to :controller => 'calendar', :action => 'index' }
+        end
         format.html { render :action => "new" }
         format.json { render :json => @event.errors, :status => :unprocessable_entity }
       end
@@ -126,7 +133,6 @@ class EventsController < ApplicationController
 
     respond_to do |format|
       if @event.update_attributes(params[:event])
-
         flash[:notice] = t('controller.successfully_updated', :model => t('activerecord.models.event'))
         format.html { redirect_to(@event) }
         format.json { head :no_content }
@@ -155,4 +161,18 @@ class EventsController < ApplicationController
     @event_categories = EventCategory.all
   end
 
+  private
+  def get_date
+    if params[:date]
+      begin
+        d = Time.zone.parse(params[:date])
+      rescue ArgumentError
+        d = Time.zone.now.beginning_of_day
+        flash[:notice] = t('page.invalid_date')
+      end
+    else
+      d = Time.zone.now.beginning_of_day
+    end
+    d
+  end
 end
