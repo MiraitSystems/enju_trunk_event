@@ -5,7 +5,7 @@ class EventsController < ApplicationController
   add_breadcrumb "I18n.t('page.new', :model => I18n.t('activerecord.models.event'))", 'new_event_path', :only => [:new, :create]
   add_breadcrumb "I18n.t('page.editing', :model => I18n.t('activerecord.models.event'))", 'edit_event_path(params[:id])', :only => [:edit, :update]
   load_and_authorize_resource
-  before_filter :get_library, :get_patron
+  before_filter :get_library, :get_agent
   before_filter :get_libraries, :except => :destroy
   before_filter :prepare_options
   before_filter :store_page, :only => :index

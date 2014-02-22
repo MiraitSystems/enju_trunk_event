@@ -184,7 +184,7 @@ describe EventCategoriesController do
           assigns(:event_category).should be_valid
         end
 
-        it "redirects to the created patron" do
+        it "redirects to the created agent" do
           post :create, :event_category => @attrs
           response.should redirect_to(assigns(:event_category))
         end
