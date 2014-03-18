@@ -159,6 +159,7 @@ class EventsController < ApplicationController
   private
   def prepare_options
     @event_categories = EventCategory.all
+    @roles = Role.all
   end
 
   private

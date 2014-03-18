@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 class Event < ActiveRecord::Base
   attr_accessible :library_id, :event_category_id, :name, :note, :start_at,
-    :end_at, :all_day, :display_name
+    :end_at, :all_day, :display_name, :required_role_id
 
 #  scope :closing_days, includes(:event_category).where('event_categories.name = ?', 'closed') TODO original
   scope :closing_days, :include => :event_category, :conditions => ['event_categories.id = 2 OR event_categories.checkin_ng = ?', true] # TODO copy from enju_trunk
