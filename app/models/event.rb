@@ -3,7 +3,6 @@ class Event < ActiveRecord::Base
   attr_accessible :library_id, :event_category_id, :name, :note, :start_at,
     :end_at, :all_day, :display_name, :required_role_id
 
-  scope :readable_by, lambda{|user| {:conditions => ['required_role_id <= ?', user.try(:user_has_role).try(:role_id)]}}
 #  scope :closing_days, includes(:event_category).where('event_categories.name = ?', 'closed') TODO original
   scope :closing_days, :include => :event_category, :conditions => ['event_categories.id = 2 OR event_categories.checkin_ng = ?', true] # TODO copy from enju_trunk
   scope :on, lambda {|datetime| where('start_at >= ? AND start_at < ?', datetime.beginning_of_day, datetime.tomorrow.beginning_of_day + 1)}
@@ -13,6 +12,7 @@ class Event < ActiveRecord::Base
 
   belongs_to :event_category, :validate => true
   belongs_to :library, :validate => true
+  belongs_to :required_role, :class_name => 'Role', :foreign_key => 'required_role_id', :validate => true
   has_many :picture_files, :as => :picture_attachable
   has_many :participates, :dependent => :destroy
   has_many :agents, :through => :participates
@@ -26,10 +26,11 @@ class Event < ActiveRecord::Base
     time :updated_at
     time :start_at
     time :end_at
+    integer :required_role_id
   end
 
-  validates_presence_of :name, :library, :event_category
-  validates_associated :library, :event_category
+  validates_presence_of :name, :library, :event_category, :required_role
+  validates_associated :library, :event_category, :required_role
   validate :check_date
   before_validation :set_date
   before_validation :set_display_name, :on => :create
