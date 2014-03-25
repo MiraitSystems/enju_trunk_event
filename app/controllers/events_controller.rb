@@ -26,6 +26,9 @@ class EventsController < ApplicationController
     search = Sunspot.new_search(Event)
     library = @library
     search.build do
+      if @user then
+        with(:required_role_id).less_than_or_equal_to current_user.try(:role)
+      end
       fulltext query if query.present?
       with(:library_id).equal_to library.id if library
       #with(:tag).equal_to tag
