@@ -79,7 +79,6 @@ class EventImportFile < ActiveRecord::Base
         event.all_day = true
       end
       library = Library.where(:name => row['library']).first
-      library = Library.web if library.blank?
       event.library = library
       event_category = EventCategory.where(:name => category).first || EventCategory.where(:name => 'unknown').first
       event.event_category = event_category
