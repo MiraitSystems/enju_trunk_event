@@ -24,27 +24,12 @@ class EventsController < ApplicationController
     mode = params[:mode]
 
     search = Sunspot.new_search(Event)
-    search.data_accessor_for(Event).include = [
-      :library,
-      :event_category,
-      :required_role
-    ]
-    search.data_accessor_for(Event).select = [
-      :id,
-      :library_id,
-      :event_category_id,
-      :start_at,
-      :end_at,
-      :display_name,
-      :required_role_id
-    ]
     library = @library
-    role_id = UserHasRole.where(:user_id => current_user.try(:id)).first.role_id rescue nil || Role.where(:name => 'Guest').select(:id).first.id
+    role_id = current_user.role.id rescue nil || Role.where(:name => 'Guest').first.id
     search.build do
       fulltext query if query.present?
       with(:required_role_id).less_than_or_equal_to role_id
       with(:library_id).equal_to library.id if library
-      #with(:tag).equal_to tag
       if date
         with(:start_at).less_than_or_equal_to Time.zone.parse(date)
         with(:end_at).greater_than Time.zone.parse(date)
@@ -79,6 +64,9 @@ class EventsController < ApplicationController
   def show
     @event = Event.find(params[:id])
 
+    unless @event.required_role.name == 'Guest' && !current_user.try(:has_role, @event.required_role.name)
+       access_denied; return
+    end
     respond_to do |format|
       format.html { render :template => 'opac/events/show', :layout => 'opac' } if params[:opac]
       format.html # show.html.erb

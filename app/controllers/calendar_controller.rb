@@ -12,10 +12,11 @@ class CalendarController < ApplicationController
     @shown_month = Time.zone.local(@year, @month, 1) rescue Time.zone.now
 
     # TODO: Solrを使って取得
+    role_id = current_user.role.id rescue nil || Role.where(:name => 'Guest').first.id
     if get_library
-      @event_strips = Event.at(@library).event_strips_for_month(@shown_month)
+      @event_strips = Event.at(@library).where("required_role_id <= #{role_id}").event_strips_for_month(@shown_month)
     else
-      @event_strips = Event.event_strips_for_month(@shown_month)
+      @event_strips = Event.where("required_role_id <= #{role_id}").event_strips_for_month(@shown_month)
     end
     get_libraries
   end
