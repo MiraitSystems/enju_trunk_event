@@ -25,10 +25,11 @@ class EventsController < ApplicationController
 
     search = Sunspot.new_search(Event)
     library = @library
+    role_id = current_user.role.id rescue nil || Role.where(:name => 'Guest').first.id
     search.build do
       fulltext query if query.present?
+      with(:required_role_id).less_than_or_equal_to role_id
       with(:library_id).equal_to library.id if library
-      #with(:tag).equal_to tag
       if date
         with(:start_at).less_than_or_equal_to Time.zone.parse(date)
         with(:end_at).greater_than Time.zone.parse(date)
@@ -56,13 +57,16 @@ class EventsController < ApplicationController
       format.atom
       format.ics
     end
-  end
+ end
 
   # GET /events/1
   # GET /events/1.json
   def show
     @event = Event.find(params[:id])
 
+    unless @event.required_role.name == 'Guest' && !current_user.try(:has_role, @event.required_role.name)
+       access_denied; return
+    end
     respond_to do |format|
       format.html { render :template => 'opac/events/show', :layout => 'opac' } if params[:opac]
       format.html # show.html.erb
@@ -159,6 +163,7 @@ class EventsController < ApplicationController
   private
   def prepare_options
     @event_categories = EventCategory.all
+    @roles = Role.all
   end
 
   private
