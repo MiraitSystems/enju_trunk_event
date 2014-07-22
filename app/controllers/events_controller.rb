@@ -64,7 +64,7 @@ class EventsController < ApplicationController
   def show
     @event = Event.find(params[:id])
 
-    unless @event.required_role.name == 'Guest' && !current_user.try(:has_role, @event.required_role.name)
+    unless (@event.required_role.name == 'Guest' || current_user.role.id >= @event.required_role.id)
        access_denied; return
     end
     respond_to do |format|
