@@ -2,7 +2,8 @@ ja:
   activerecord:
     models:
       event_category: 催し物の種類
-      event: 開館日と催し物
+      event: 開館カレンダーとお知らせ
+      event_calendar: 開館カレンダー
       event_import_file: 催し物のインポート用ファイル
       event_import_result: 催し物インポートの結果
       participate: 参加
