@@ -1,7 +1,3 @@
-<div data-role="header">
-<h1 class="title"><%= t('page.listing', :model => t('activerecord.models.event')) -%></h1>
-</div>
-
 <div data-role="content">
 <%- if @library -%>
   <h2><%= link_to @library.display_name.localize, @library -%></h2>
