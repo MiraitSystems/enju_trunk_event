@@ -1,46 +1,23 @@
 <script language="javascript">
-
-  var start_time = "00:00";
-  var end_time   = "00:00";
-
   $(document).ready(function() {
     if ($('input:checkbox#event_all_day').is(':checked')) {
-      $('#event_start_at').val('<%= @event.start_at.strftime("%Y-%m-%d") -%>');
-      $('#event_end_at').val('<%= @event.end_at.strftime("%Y-%m-%d") -%>');
-      if (typeof $('#event_start_at').setCalendar == "function") {
-        $('#event_start_at').setCalendar({src:'/assets/calendar.png', fmt:'%Y-%m-%d', displayTime:false});
-        $('#event_end_at').setCalendar({src:'/assets/calendar.png', fmt:'%Y-%m-%d', displayTime:false});
-      }
-    } else {
-      $('#event_start_at').val('<%= @event.start_at.strftime("%Y-%m-%d %H:%M") -%>');
-      $('#event_end_at').val('<%= @event.end_at.strftime("%Y-%m-%d %H:%M") -%>');
-      if (typeof $('#event_start_at').setCalendar == "function") {
-        $('#event_start_at').setCalendar({src:'/assets/calendar.png', fmt:'%Y-%m-%d %H:%M', displayTime:true});
-        $('#event_end_at').setCalendar({src:'/assets/calendar.png', fmt:'%Y-%m-%d %H:%M', displayTime:true});
-      }
+      $('#event_start_at_4i').attr('disabled', true);
+      $('#event_start_at_5i').attr('disabled', true);
+      $('#event_end_at_4i').attr('disabled', true);
+      $('#event_end_at_5i').attr('disabled', true);
     }
 
     $('input:checkbox#event_all_day').click(function() {
       if ($(this).is(':checked')) {
-        $('#event_start_at_trigger_').remove();
-        start_time = Date.parseDate($('#event_start_at').val(), '%Y-%m-%d %H:%M').print('%H:%M');
-        $('#event_start_at').val(Date.parseDate($('#event_start_at').val(), '%Y-%m-%d').print('%Y-%m-%d'));
-        $('#event_end_at_trigger_').remove();
-        end_time = Date.parseDate($('#event_end_at').val(), '%Y-%m-%d %H:%M').print('%H:%M');
-        $('#event_end_at').val(Date.parseDate($('#event_end_at').val(), '%Y-%m-%d').print('%Y-%m-%d'));
-        if (typeof $('#event_start_at').setCalendar == "function") {
-          $('#event_start_at').setCalendar({src:'/assets/calendar.png', fmt:'%Y-%m-%d', displayTime:false});
-          $('#event_end_at').setCalendar({src:'/assets/calendar.png', fmt:'%Y-%m-%d', displayTime:false});
-        }
+        $('#event_start_at_4i').attr('disabled', true);
+        $('#event_start_at_5i').attr('disabled', true);
+        $('#event_end_at_4i').attr('disabled', true);
+        $('#event_end_at_5i').attr('disabled', true);
       } else {
-        $('#event_start_at_trigger_').remove();
-        $('#event_start_at').val(Date.parseDate($('#event_start_at').val(), '%Y-%m-%d').print('%Y-%m-%d')+' '+start_time);
-        $('#event_end_at_trigger_').remove();
-        $('#event_end_at').val(Date.parseDate($('#event_end_at').val(), '%Y-%m-%d').print('%Y-%m-%d')+' '+end_time);
-        if (typeof $('#event_start_at').setCalendar == "function") {
-          $('#event_start_at').setCalendar({src:'/assets/calendar.png', fmt:'%Y-%m-%d %H:%M', displayTime:true});
-          $('#event_end_at').setCalendar({src:'/assets/calendar.png', fmt:'%Y-%m-%d %H:%M', displayTime:true});
-        }
+        $('#event_start_at_4i').attr('disabled', false);
+        $('#event_start_at_5i').attr('disabled', false);
+        $('#event_end_at_4i').attr('disabled', false);
+        $('#event_end_at_5i').attr('disabled', false);
       }
     });
   });

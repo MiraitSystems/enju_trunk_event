@@ -1,3 +1,3 @@
 module EnjuEvent
-  VERSION = "0.2"
+  VERSION = "classic-v0.2"
 end

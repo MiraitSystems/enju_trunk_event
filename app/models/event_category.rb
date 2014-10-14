@@ -3,7 +3,6 @@ class EventCategory < ActiveRecord::Base
   include MasterModel
   default_scope :order => "position"
   has_many :events
-  has_paper_trail
 
   paginates_per 10
 end
