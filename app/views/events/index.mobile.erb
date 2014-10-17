@@ -33,13 +33,17 @@
 </div>
 
 <ul data-role="listview">
-  <%- @events.each_with_index do |event, i| -%>
-    <li>
-      <%= link_to event.display_name.localize, event -%>
-      <br />
-      <%= l(event.start_at, :format => :short) -%>
-      -
-      <%= l(event.end_at, :format => :short) -%>
-    </li>
-  <%- end -%>
+  <% if @events.present? %>
+    <%- @events.each_with_index do |event, i| -%>
+      <li>
+        <%= link_to event.display_name.localize, event -%>
+        <br />
+        <%= l(event.start_at, :format => :short) -%>
+        -
+        <%= l(event.end_at, :format => :short) -%>
+      </li>
+    <%- end -%>
+  <% else %>
+    <%= t('event.event_not_exist') %>
+  <% end %>
 </ul>
