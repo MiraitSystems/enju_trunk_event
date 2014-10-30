@@ -2,6 +2,7 @@ en:
   activerecord:
     models:
       event_category: Event category
+      event_calendar: Event Calendar
       event: Event
       event_import_file: Event import file
       event_import_result: Event Import Result
